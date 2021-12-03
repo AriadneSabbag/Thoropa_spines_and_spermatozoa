@@ -8,7 +8,7 @@ The paper is submitted to Zoologischer Anzeiger.
 
 ### About the code:
 (1) Paths to my personal directories were replaced by "...".
-(2) Output names are sometimes in Portuguese.
+(2) Input and output names are sometimes in Portuguese.
 (3) I am not an R expert or a computer scientist. There are certainly ways to do a better code. So I am sorry if there are some confusions.
 
 If you have doubts, don't hesitate to write to me at my e-mail: ariadne.fares.sabbag@gmail.com.

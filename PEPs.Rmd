@@ -7,16 +7,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-################################          Testes de Normalidade      #######################################
+################################          Normality tests      #######################################
 
-#OBS: tem que ser com as variaveis brutas
+#These tests are performed with raw datas
 
 ```{r}
-megnorm <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/input-para-sumarizacoes/meg.txt")
-milnorm <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/input-para-sumarizacoes/mil.txt")
-saxnorm <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/input-para-sumarizacoes/sax.txt")
-taonorm <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/input-para-sumarizacoes/tao.txt")
-petnorm <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/input-para-sumarizacoes/pet.txt")
+megnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/meg.txt")
+milnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/mil.txt")
+saxnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/sax.txt")
+taonorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/tao.txt")
+petnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/pet.txt")
 
 #Shapiro-Wilks
 set.seed(1)
@@ -31,7 +31,7 @@ capture.output(shapiro.test(taonorm$nivesq), file = "shap.taonorm.nivesq.txt")
 capture.output(shapiro.test(petnorm$crc), file = "shap.petnorm.crc.txt")
 capture.output(shapiro.test(petnorm$nexcesq), file = "shap.petnorm.nexcesq.txt")
 
-#Graficos de distribuicao
+#Distribution Graphics
 set.seed(1)
 ggplot(subset(petnorm), aes(crc)) + 
   geom_density(aes(x = crc), kernel = "gaussian", color = "#284D00") +
@@ -94,297 +94,213 @@ ggplot(subset(taonorm), aes(nivesq)) +
   
 ```
 
-################################          Teste de Homocedasticidade       ####################################
+############################################### Violin Plots #####################################################
 
 ```{r}
-#M de Box
-set.seed(1)
-capture.output(boxM(petnorm[,2:3],petnorm[,1]), file = "teste.boxm.petropolitana.txt")
-capture.output(boxM(megnorm[,2:3],megnorm[,1]), file = "teste.boxm.megatympanum.txt")
-capture.output(boxM(milnorm[,2:3],milnorm[,1]), file = "teste.boxm.miliaris.txt")
-capture.output(boxM(saxnorm[,2:3],saxnorm[,1]), file = "teste.boxm.saxatilis.txt")
-capture.output(boxM(taonorm[,2:3],taonorm[,1]), file = "teste.boxm.taophora.txt")
 
-```
-
-############################################### Violinos #####################################################
-
-```{r}
-#esses violinos todos são feitos separados mas eu vou junta-los no corel draw porque eu nao sei fazer junto.
-
-#n total de peps por especie por local da mao
+#Total sample of PEPs by species, by part of the hand
 
 peps <- 
-  read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/thoropa380_spp_peps.txt")
+  read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/thoropa380_spp_peps.txt")
 
 set.seed(1)
 ggplot(data = peps, aes(x = spp, y = nexcesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "nexcesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = nexcesq ~ spp, data = peps)), file = "anova-nexcesq-peps.txt")
-capture.output(TukeyHSD(aov(formula = nexcesq ~ spp, data = peps)), file = "tukey-nexcesq-peps.txt")  
+capture.output(as.data.frame(kruskal_test(data = peps, formula = nexcesq ~ spp)), file = "kruskalwallis-nexcesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = nexcesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nexcesq-peps.txt") 
 
 set.seed(1)
 ggplot(data = peps, aes(x = spp, y = ntubesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "ntubesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = ntubesq ~ spp, data = peps)), file = "anova-ntubesq-peps.txt")
-capture.output(TukeyHSD(aov(formula = ntubesq ~ spp, data = peps)), file = "tukey-ntubesq-peps.txt")    
+capture.output(as.data.frame(kruskal_test(data = peps, formula = ntubesq ~ spp)), file = "kruskalwallis-ntubesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = ntubesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-ntubesq-peps.txt")
 
 set.seed(1)
 ggplot(data = peps, aes(x = spp, y = niiesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "niiesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = niiesq ~ spp, data = peps)), file = "anova-niiesq-peps.txt")
-capture.output(TukeyHSD(aov(formula = niiesq ~ spp, data = peps)), file = "tukey-niiesq-peps.txt")    
+capture.output(as.data.frame(kruskal_test(data = peps, formula = niiesq ~ spp)), file = "kruskalwallis-niiesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = niiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiesq-peps.txt")
+
 
 set.seed(1)
 ggplot(data = peps, aes(x = spp, y = niiiesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "niiiesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = niiiesq ~ spp, data = peps)), file = "anova-niiiesq-peps.txt")
-capture.output(TukeyHSD(aov(formula = niiiesq ~ spp, data = peps)), file = "tukey-niiiesq-peps.txt")    
+capture.output(as.data.frame(kruskal_test(data = peps, formula = niiiesq ~ spp)), file = "kruskalwallis-niiiesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = niiiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiiesq-peps.txt")
+
 
 set.seed(1)
 ggplot(data = peps, aes(x = spp, y = nivesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "nivesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = nivesq ~ spp, data = peps)), file = "anova-nivesq-peps.txt")
-capture.output(TukeyHSD(aov(formula = nivesq ~ spp, data = peps)), file = "tukey-nivesq-peps.txt")    
+capture.output(as.data.frame(kruskal_test(data = peps, formula = nivesq ~ spp)), file = "kruskalwallis-nivesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = nivesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nivesq-peps.txt")
 
-#retirando o maior fator limitante de numero amostral: peps da excrescência
+#removing the biggest limiting factor of sample size (the PEPs of MPA-II)
 
 pepsparcial <- 
-  read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/thoropa502_spp_pepsparcial.txt")
+  read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/thoropa502_spp_pepsparcial.txt")
 
 set.seed(1)
 ggplot(data = pepsparcial, aes(x = spp, y = ntubesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "ntubesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = ntubesq ~ spp, data = pepsparcial)), file = "anova-ntubesq-pepsparcial.txt")
-capture.output(TukeyHSD(aov(formula = ntubesq ~ spp, data = pepsparcial)), file = "tukey-ntubesq-pepsparcial.txt")    
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = ntubesq ~ spp)), file = "kruskalwallis-ntubesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = ntubesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-ntubesq-pepsparcial.txt")
 
 
 set.seed(1)
 ggplot(data = pepsparcial, aes(x = spp, y = niiesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "niiesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = niiesq ~ spp, data = pepsparcial)), file = "anova-niiesq-pepsparcial.txt")
-capture.output(TukeyHSD(aov(formula = niiesq ~ spp, data = pepsparcial)), file = "tukey-niiesq-pepsparcial.txt")    
-
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = niiesq ~ spp)), file = "kruskalwallis-niiesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = niiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiesq-pepsparcial.txt")
 
 set.seed(1)
 ggplot(data = pepsparcial, aes(x = spp, y = niiiesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "niiiesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
-  
-capture.output(summary(aov(formula = niiiesq ~ spp, data = pepsparcial)), file = "anova-niiiesq-pepsparcial.txt")
-capture.output(TukeyHSD(aov(formula = niiiesq ~ spp, data = pepsparcial)), file = "tukey-niiiesq-pepsparcial.txt")    
 
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = niiiesq ~ spp)), file = "kruskalwallis-niiiesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = niiiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiiesq-pepsparcial.txt")
 
 set.seed(1)
 ggplot(data = pepsparcial, aes(x = spp, y = nivesq)) + 
-  geom_violin(trim = FALSE, fill = "cadetblue4", color = "#284D00") +
-  geom_jitter(height = 0, width = 0.1, size = 0.8) +
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "species", y = "nivesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
-  
-capture.output(summary(aov(formula = nivesq ~ spp, data = pepsparcial)), file = "anova-nivesq-pepsparcial.txt")
-capture.output(TukeyHSD(aov(formula = nivesq ~ spp, data = pepsparcial)), file = "tukey-nivesq-pepsparcial.txt")   
+
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = nivesq ~ spp)), file = "kruskalwallis-nivesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = nivesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nivesq-pepsparcial.txt")
 ```
 
 
-################################          Analise dos dados        #######################################
+################################          Comparisons by species        #######################################
 
 ```{r}
-#Excrescencia por especie
-nexcesqspp <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil216_spp_nexcesq.txt")
+#MPA-II by species
+nexcesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil216_spp_nexcesq.txt")
 
 set.seed(1)
 ggplot(data = nexcesqspp, aes(x = spp, y = nexcesq, fill = spp)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   labs(x = "species", y = "nexcesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
-  
-capture.output(summary(aov(formula = nexcesq ~ spp, data = nexcesqspp)), file = "anova-nexcesq-nexcesqspp.txt")
-capture.output(TukeyHSD(aov(formula = nexcesq ~ spp, data = nexcesqspp)), file = "tukey-nexcesq-nexcesqspp.txt")
 
-#tuberculo por especie
-ntubesqspp <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil531_spp_ntubesq.txt")
+capture.output(as.data.frame(kruskal_test(data = nexcesqspp, formula = nexcesq ~ spp)), file = "kruskalwallis-nexcesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = nexcesqspp, formula = nexcesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nexcesqspp-spp.txt")
+
+#IMT-II by species
+ntubesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil531_spp_ntubesq.txt")
 
 set.seed(1)
 ggplot(data = ntubesqspp, aes(x = spp, y = ntubesq, fill = spp)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   labs(x = "species", y = "ntubesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
   
-capture.output(summary(aov(formula = ntubesq ~ spp, data = ntubesqspp)), file = "anova-ntubesq-ntubesqspp.txt")
-capture.output(TukeyHSD(aov(formula = ntubesq ~ spp, data = ntubesqspp)), file = "tukey-ntubesq-ntubesqspp.txt")
+capture.output(as.data.frame(kruskal_test(data = ntubesqspp, formula = ntubesq ~ spp)), file = "kruskalwallis-ntubesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = ntubesqspp, formula = ntubesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-ntubesqspp-spp.txt")
 
-#dedo II por especie
-niiesqspp <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil532_spp_niiesq.txt")
+#Finger II by species
+niiesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil532_spp_niiesq.txt")
 
 set.seed(1)
 ggplot(data = niiesqspp, aes(x = spp, y = niiesq, fill = spp)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   labs(x = "species", y = "niiesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
 
-capture.output(summary(aov(formula = niiesq ~ spp, data = niiesqspp)), file = "anova-niiesq-niiesqspp.txt")
-capture.output(TukeyHSD(aov(formula = niiesq ~ spp, data = niiesqspp)), file = "tukey-niiesq-niiesqspp.txt")
+capture.output(as.data.frame(kruskal_test(data = niiesqspp, formula = niiesq ~ spp)), file = "kruskalwallis-niiesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = niiesqspp, formula = niiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiesqspp-spp.txt")
 
-#dedo III por especie
+#Finger III by species
 
-niiiesqspp <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil600_spp_niiiesq.txt")
+niiiesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil600_spp_niiiesq.txt")
 
 set.seed(1)
 ggplot(data = niiiesqspp, aes(x = spp, y = niiiesq, fill = spp)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   labs(x = "species", y = "niiiesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
 
-capture.output(summary(aov(formula = niiiesq ~ spp, data = niiiesqspp)), file = "anova-niiiesq-niiiesqspp.txt")
-capture.output(TukeyHSD(aov(formula = niiiesq ~ spp, data = niiiesqspp)), file = "tukey-niiiesq-niiiesqspp.txt")
+capture.output(as.data.frame(kruskal_test(data = niiiesqspp, formula = niiiesq ~ spp)), file = "kruskalwallis-niiiesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = niiiesqspp, formula = niiiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiiesqspp-spp.txt")
 
-#dedo IV por especie
-nivesqspp <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil616_spp_nivesq.txt")
+#Finger IV by species
+
+nivesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil616_spp_nivesq.txt")
 
 set.seed(1)
 ggplot(data = nivesqspp, aes(x = spp, y = nivesq, fill = spp)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
   labs(x = "species", y = "nivesq") +
   theme_bw() +
   theme(axis.text.x = element_text(face = "italic"))
 
-capture.output(summary(aov(formula = nivesq ~ spp, data = nivesqspp)), file = "anova-nivesq-nivesqspp.txt")
-capture.output(TukeyHSD(aov(formula = nivesq ~ spp, data = nivesqspp)), file = "tukey-nivesq-nivesqspp.txt")
-
-#Excrescencia por clado
-nexcesqclado <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil70_clado_nexcesq.txt")
-
-set.seed(1)
-ggplot(data = nexcesqclado, aes(x = cladoago18, y = nexcesq, fill = cladoago18)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
-  labs(x = "clado", y = "nexcesq") +
-  theme_bw() +
-  theme(axis.text.x = element_text(face = "italic"))
-
-capture.output(summary(aov(formula = nexcesq ~ cladoago18, data = nexcesqclado)), file = "anova-nexcesq-nexcesqclado.txt")
-capture.output(TukeyHSD(aov(formula = nexcesq ~ cladoago18, data = nexcesqclado)), file = "tukey-nexcesq-nexcesqclado.txt")
-
-#tuberculo por clado
-ntubesqclado <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil159_clado_ntubesq.txt")
-
-set.seed(1)
-ggplot(data = ntubesqclado, aes(x = cladoago18, y = ntubesq, fill = cladoago18)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
-  labs(x = "species", y = "ntubesq") +
-  theme_bw() +
-  theme(axis.text.x = element_text(face = "italic"))
-
-capture.output(summary(aov(formula = ntubesq ~ cladoago18, data = ntubesqclado)), file = "anova-ntubesq-ntubesqclado.txt")
-capture.output(TukeyHSD(aov(formula = ntubesq ~ cladoago18, data = ntubesqclado)), file = "tukey-ntubesq-ntubesqclado.txt")
-
-#dedo II por clado
-niiesqclado <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil159_clado_niiesq.txt")
-
-set.seed(1)
-ggplot(data = niiesqclado, aes(x = cladoago18, y = niiesq, fill = cladoago18)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
-  labs(x = "species", y = "niiesq") +
-  theme_bw() +
-  theme(axis.text.x = element_text(face = "italic"))
-
-capture.output(summary(aov(formula = niiesq ~ cladoago18, data = niiesqclado)), file = "anova-niiesq-niiesqclado.txt")
-capture.output(TukeyHSD(aov(formula = niiesq ~ cladoago18, data = niiesqclado)), file = "tukey-niiesq-niiesqclado.txt")
-
-#dedo III por clado
-
-niiiesqclado <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil174_clado_niiiesq.txt")
-
-set.seed(1)
-ggplot(data = niiiesqclado, aes(x = cladoago18, y = niiiesq, fill = cladoago18)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
-  labs(x = "species", y = "niiiesq") +
-  theme_bw() +
-  theme(axis.text.x = element_text(face = "italic"))
-
-capture.output(summary(aov(formula = niiiesq ~ cladoago18, data = niiiesqclado)), file = "anova-niiiesq-niiiesqclado.txt")
-capture.output(TukeyHSD(aov(formula = niiiesq ~ cladoago18, data = niiiesqclado)), file = "tukey-niiiesq-niiiesqclado.txt")
-
-#dedo IV por clado
-nivesqclado <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/grmil177_clado_nivesq.txt")
-
-set.seed(1)
-ggplot(data = nivesqclado, aes(x = cladoago18, y = nivesq, fill = cladoago18)) + 
-  geom_violin(trim = FALSE) +
-  geom_jitter(height = 0, width = 0.1, size = 0.8, color = "black") +
-  labs(x = "species", y = "nivesq") +
-  theme_bw() +
-  theme(axis.text.x = element_text(face = "italic"))
-  
-capture.output(summary(aov(formula = nivesq ~ cladoago18, data = nivesqclado)), file = "anova-nivesq-nivesqclado.txt")
-capture.output(TukeyHSD(aov(formula = nivesq ~ cladoago18, data = nivesqclado)), file = "tukey-nivesq-nivesqclado.txt")
+capture.output(as.data.frame(kruskal_test(data = nivesqspp, formula = nivesq ~ spp)), file = "kruskalwallis-nivesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = nivesqspp, formula = nivesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nivesqspp-spp.txt")
 ```
 
-################################          Relacao entre PEPs e CRC        #####################################
+################################          Relationship between PEPs and SVL        #####################################
 
 ```{r}
-##Regressoes lineares entre CRC e N peps em cada regiao, por especie
+##Linear Regressions between N of PEPs and SVL in each part of the hand, by species
 thoropapepscrc <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/thoropa1024_spp_pepsXcrc.txt")
 
 thoropapepscrc$crc <- as.numeric(thoropapepscrc$crc)
@@ -394,7 +310,7 @@ thoropapepscrc$niiesq <- as.numeric(thoropapepscrc$niiesq)
 thoropapepscrc$niiiesq <- as.numeric(thoropapepscrc$niiiesq)
 thoropapepscrc$nivesq <- as.numeric(thoropapepscrc$nivesq)
 
-#Grafico
+#Graphic
 ggplot(thoropapepscrc, x = crc) + 
   geom_point(aes(x = crc, y = nexcesq), fill = "red", color = "black", shape = 21, size = 1.5) +
   geom_smooth(aes(x = crc, y = nexcesq), method = "lm", se = FALSE, color = "red") + 
@@ -416,7 +332,7 @@ ggplot(thoropapepscrc, x = crc) +
   theme_bw() +
   theme(strip.background = element_rect(fill ="white"), strip.text = element_text(face = "bold.italic", size = 13))
   
-#Sumarios das regressoes 
+#Regression summary
 capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "lm-crcXnexcesq-petropolitana.txt")
 capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "lm-crcXnexcesq-megatympanum.txt")
 capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "lm-crcXnexcesq-miliaris.txt")
@@ -444,7 +360,7 @@ capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrc, subset 
 capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "lm-crcXnivesq-taophora.txt")
 
 
-#Diagosticos das regressoes
+#Regression Diagnostics
 png("diagnostico-crcXnexcesq-petropolitana.png")
 par(mfrow=c(2,2))
 plot(lm(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa petropolitana"), main="CRC x Nexc-esq de Thoropa petropolitana")
@@ -595,475 +511,21 @@ plot(lm(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$s
 abline(lm(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa taophora"), col="red")
 dev.off()
 
-##Regressoes lineares entre CRC e N peps em cada regiao, por clados
-thoropapepscrcclado <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/thoropa189_clado_pepsXcrc.txt")
-
-thoropapepscrcclado$crc <- as.numeric(thoropapepscrcclado$crc)
-thoropapepscrcclado$nexcesq <- as.numeric(thoropapepscrcclado$nexcesq)
-thoropapepscrcclado$ntubesq <- as.numeric(thoropapepscrcclado$ntubesq)
-thoropapepscrcclado$niiesq <- as.numeric(thoropapepscrcclado$niiesq)
-thoropapepscrcclado$niiiesq <- as.numeric(thoropapepscrcclado$niiiesq)
-thoropapepscrcclado$nivesq <- as.numeric(thoropapepscrcclado$nivesq)
-
-#Grafico
-ggplot(thoropapepscrcclado, x = crc) + 
-  geom_point(aes(x = crc, y = nexcesq), fill = "red", color = "black", shape = 21, size = 1.5) +
-  geom_smooth(aes(x = crc, y = nexcesq), method = "lm", se = FALSE, color = "red") + 
-  stat_regline_equation(aes(x = crc, y = nexcesq), data = NULL, color = "red", label.x.npc = 0.6, label.y.npc = 0.2) +
-  geom_point(aes(x = crc, y = ntubesq), fill = "blue", color = "black", shape = 21, size = 1.5) +
-  geom_smooth(aes(x = crc, y = ntubesq), method = "lm", se = FALSE, color = "blue") + 
-  stat_regline_equation(aes(x = crc, y = ntubesq), data = NULL, color = "blue", label.x.npc = 0.6, label.y.npc = 0.2) +
-  geom_point(aes(x = crc, y = niiesq), fill = "green", color = "black", shape = 21, size = 1.5) +
-  geom_smooth(aes(x = crc, y = niiesq), method = "lm", se = FALSE, color = "green") + 
-  stat_regline_equation(aes(x = crc, y = niiesq), data = NULL, color = "green", label.x.npc = 0.6, label.y.npc = 0.2) +
-  geom_point(aes(x = crc, y = niiiesq), fill = "pink", color = "black", shape = 21, size = 1.5) +
-  geom_smooth(aes(x = crc, y = niiiesq), method = "lm", se = FALSE, color = "pink") + 
-  stat_regline_equation(aes(x = crc, y = niiiesq), data = NULL, color = "pink", label.x.npc = 0.6, label.y.npc = 0.2) +
-  geom_point(aes(x = crc, y = nivesq), fill = "black", color = "black", shape = 21, size = 1.5) +
-  geom_smooth(aes(x = crc, y = nivesq), method = "lm", se = FALSE, color = "black") + 
-  stat_regline_equation(aes(x = crc, y = nivesq), data = NULL, color = "black", label.x.npc = 0.6, label.y.npc = 0.2) +
-  facet_wrap(~ cladoago18, scales = "free") + 
-  labs(x = "CRC (mm)", y = "peps") +
-  theme_bw() +
-  theme(strip.background = element_rect(fill ="white"), strip.text = element_text(face = "bold.italic", size = 13))
-  
-#Sumarios das regressoes
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A")), file = "lm-crcXnexcesq-A.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B")), file = "lm-crcXnexcesq-B.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C")), file = "lm-crcXnexcesq-C.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D")), file = "lm-crcXnexcesq-D.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E")), file = "lm-crcXnexcesq-E.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F")), file = "lm-crcXnexcesq-F.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G")), file = "lm-crcXnexcesq-G.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H")), file = "lm-crcXnexcesq-H.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I")), file = "lm-crcXnexcesq-I.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J")), file = "lm-crcXnexcesq-J.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K")), file = "lm-crcXnexcesq-K.txt")
-capture.output(summary(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L")), file = "lm-crcXnexcesq-L.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A")), file = "lm-crcXntubesq-A.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B")), file = "lm-crcXntubesq-B.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C")), file = "lm-crcXntubesq-C.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D")), file = "lm-crcXntubesq-D.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E")), file = "lm-crcXntubesq-E.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F")), file = "lm-crcXntubesq-F.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G")), file = "lm-crcXntubesq-G.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H")), file = "lm-crcXntubesq-H.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I")), file = "lm-crcXntubesq-I.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J")), file = "lm-crcXntubesq-J.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K")), file = "lm-crcXntubesq-K.txt")
-capture.output(summary(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L")), file = "lm-crcXntubesq-L.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A")), file = "lm-crcXniiesq-A.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B")), file = "lm-crcXniiesq-B.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C")), file = "lm-crcXniiesq-C.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D")), file = "lm-crcXniiesq-D.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E")), file = "lm-crcXniiesq-E.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F")), file = "lm-crcXniiesq-F.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G")), file = "lm-crcXniiesq-G.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H")), file = "lm-crcXniiesq-H.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I")), file = "lm-crcXniiesq-I.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J")), file = "lm-crcXniiesq-J.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K")), file = "lm-crcXniiesq-K.txt")
-capture.output(summary(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L")), file = "lm-crcXniiesq-L.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A")), file = "lm-crcXniiiesq-A.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B")), file = "lm-crcXniiiesq-B.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C")), file = "lm-crcXniiiesq-C.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D")), file = "lm-crcXniiiesq-D.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E")), file = "lm-crcXniiiesq-E.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F")), file = "lm-crcXniiiesq-F.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G")), file = "lm-crcXniiiesq-G.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H")), file = "lm-crcXniiiesq-H.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I")), file = "lm-crcXniiiesq-I.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J")), file = "lm-crcXniiiesq-J.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K")), file = "lm-crcXniiiesq-K.txt")
-capture.output(summary(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L")), file = "lm-crcXniiiesq-L.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A")), file = "lm-crcXnivesq-A.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B")), file = "lm-crcXnivesq-B.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C")), file = "lm-crcXnivesq-C.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D")), file = "lm-crcXnivesq-D.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E")), file = "lm-crcXnivesq-E.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F")), file = "lm-crcXnivesq-F.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G")), file = "lm-crcXnivesq-G.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H")), file = "lm-crcXnivesq-H.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I")), file = "lm-crcXnivesq-I.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J")), file = "lm-crcXnivesq-J.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K")), file = "lm-crcXnivesq-K.txt")
-capture.output(summary(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L")), file = "lm-crcXnivesq-L.txt") 
-
-#Diagnosticos das regressoes
-png("diagnostico-crcXnexcesq-A.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), main="CRC x Nexc-esq de A")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-B.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), main="CRC x Nexc-esq de B")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-C.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), main="CRC x Nexc-esq de C")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-D.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), main="CRC x Nexc-esq de D")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-E.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), main="CRC x Nexc-esq de E")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-F.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), main="CRC x Nexc-esq de F")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-G.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), main="CRC x Nexc-esq de G")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-H.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), main="CRC x Nexc-esq de H")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-I.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), main="CRC x Nexc-esq de I")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-J.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), main="CRC x Nexc-esq de J")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-K.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), main="CRC x Nexc-esq de K")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), col="red")
-dev.off()
-
-png("diagnostico-crcXnexcesq-L.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), main="CRC x Nexc-esq de L")
-abline(lm(formula = nexcesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-A.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), main="CRC x Ntub-esq de A")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-B.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), main="CRC x Ntub-esq de B")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-C.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), main="CRC x Ntub-esq de C")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-D.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), main="CRC x Ntub-esq de D")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-E.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), main="CRC x Ntub-esq de E")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-F.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), main="CRC x Ntub-esq de F")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-G.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), main="CRC x Ntub-esq de G")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-H.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), main="CRC x Ntub-esq de H")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-I.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), main="CRC x Ntub-esq de I")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-J.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), main="CRC x Ntub-esq de J")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-K.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), main="CRC x Ntub-esq de K")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), col="red")
-dev.off()
-
-png("diagnostico-crcXntubesq-L.png")
-par(mfrow=c(2,2))
-plot(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), main="CRC x Ntub-esq de L")
-abline(lm(formula = ntubesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-A.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), main="CRC x Nii-esq de A")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-B.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), main="CRC x Nii-esq de B")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-C.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), main="CRC x Nii-esq de C")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-D.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), main="CRC x Nii-esq de D")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-E.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), main="CRC x Nii-esq de E")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-F.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), main="CRC x Nii-esq de F")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-G.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), main="CRC x Nii-esq de G")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-H.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), main="CRC x Nii-esq de H")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-I.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), main="CRC x Nii-esq de I")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-J.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), main="CRC x Nii-esq de J")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-K.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), main="CRC x Nii-esq de K")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiesq-L.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), main="CRC x Nii-esq de L")
-abline(lm(formula = niiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-A.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), main="CRC x Niii-esq de A")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-B.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), main="CRC x Niii-esq de B")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-C.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), main="CRC x Niii-esq de C")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-D.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), main="CRC x Niii-esq de D")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-E.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), main="CRC x Niii-esq de E")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-F.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), main="CRC x Niii-esq de F")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-G.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), main="CRC x Niii-esq de G")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-H.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), main="CRC x Niii-esq de H")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-I.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), main="CRC x Niii-esq de I")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-J.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), main="CRC x Niii-esq de J")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-K.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), main="CRC x Niii-esq de K")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), col="red")
-dev.off()
-
-png("diagnostico-crcXniiiesq-L.png")
-par(mfrow=c(2,2))
-plot(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), main="CRC x Niii-esq de L")
-abline(lm(formula = niiiesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-A.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), main="CRC x Niv-esq de A")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "A"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-B.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), main="CRC x Niv-esq de B")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "B"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-C.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), main="CRC x Niv-esq de C")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "C"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-D.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), main="CRC x Niv-esq de D")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "D"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-E.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), main="CRC x Niv-esq de E")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "E"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-F.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), main="CRC x Niv-esq de F")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "F"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-G.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), main="CRC x Niv-esq de G")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "G"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-H.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), main="CRC x Niv-esq de H")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "H"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-I.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), main="CRC x Niv-esq de I")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "I"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-J.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), main="CRC x Niv-esq de J")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "J"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-K.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), main="CRC x Niv-esq de K")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "K"), col="red")
-dev.off()
-
-png("diagnostico-crcXnivesq-L.png")
-par(mfrow=c(2,2))
-plot(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), main="CRC x Niv-esq de L")
-abline(lm(formula = nivesq ~ crc, data = thoropapepscrcclado, subset = thoropapepscrcclado$cladoago18 == "L"), col="red")
-dev.off()
-  
 ```
 
-##################################################### Cores e data de coleta ################################
+######################################### PEPs color and collection dates ################################
 
 ```{r}
-cor <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/anocor_623.txt")
+cor <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/anocor_623.txt")
 
 ggplot(data = cor) + 
   geom_bar(mapping = aes(x = ano, fill = corexcesq)) +
   facet_wrap(~ spp)
 
-mescor <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/mescor_607.txt")
+mescor <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/mescor_607.txt")
 
 ggplot(data = mescor) + 
   geom_bar(mapping = aes(x = mes, fill = corexcesq))
 ```
+
 

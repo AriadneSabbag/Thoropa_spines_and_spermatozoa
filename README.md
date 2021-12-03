@@ -5,3 +5,13 @@ This is a small repository, with a basic R script used to perform statistical an
 *PEPs are papillary epidermal projections (a.k.a. "spines") found in the hand of Thoropa species, a frog from Atlantic forest in Brazil.
 
 The paper is submitted to Zoologischer Anzeiger.
+
+About the code:
+*Paths to my personal directories were replaced by "...".
+*Output names are sometimes in Portuguese.
+*I am not an R expert or a computer scientist. There are certainly ways to do a better code. So I am sorry if there are some confusions.
+
+If you have doubts, don't hesitate to write to me at my e-mail: ariadne.fares.sabbag@gmail.com.
+
+Cheers!
+

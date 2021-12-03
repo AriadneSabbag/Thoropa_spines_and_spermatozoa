@@ -12,11 +12,11 @@ knitr::opts_chunk$set(echo = TRUE)
 #These tests are performed with raw datas
 
 ```{r}
-megnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/meg.txt")
-milnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/mil.txt")
-saxnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/sax.txt")
-taonorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/tao.txt")
-petnorm <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/input-para-sumarizacoes/pet.txt")
+megnorm <- read.delim("C:/.../meg.txt")
+milnorm <- read.delim("C:/.../mil.txt")
+saxnorm <- read.delim("C:/.../sax.txt")
+taonorm <- read.delim("C:/.../tao.txt")
+petnorm <- read.delim("C:/.../pet.txt")
 
 #Shapiro-Wilks
 set.seed(1)
@@ -101,7 +101,7 @@ ggplot(subset(taonorm), aes(nivesq)) +
 #Total sample of PEPs by species, by part of the hand
 
 peps <- 
-  read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/thoropa380_spp_peps.txt")
+  read.delim("C:/.../thoropa380_spp_peps.txt")
 
 set.seed(1)
 ggplot(data = peps, aes(x = spp, y = nexcesq)) + 
@@ -168,7 +168,7 @@ capture.output(as.data.frame(dunn_test(data = peps, formula = nivesq ~ spp, p.ad
 #removing the biggest limiting factor of sample size (the PEPs of MPA-II)
 
 pepsparcial <- 
-  read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/thoropa502_spp_pepsparcial.txt")
+  read.delim("C:/.../thoropa502_spp_pepsparcial.txt")
 
 set.seed(1)
 ggplot(data = pepsparcial, aes(x = spp, y = ntubesq)) + 
@@ -225,7 +225,7 @@ capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = nivesq ~ sp
 
 ```{r}
 #MPA-II by species
-nexcesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil216_spp_nexcesq.txt")
+nexcesqspp <- read.delim("C:/.../grmil216_spp_nexcesq.txt")
 
 set.seed(1)
 ggplot(data = nexcesqspp, aes(x = spp, y = nexcesq, fill = spp)) + 
@@ -239,7 +239,7 @@ capture.output(as.data.frame(kruskal_test(data = nexcesqspp, formula = nexcesq ~
 capture.output(as.data.frame(dunn_test(data = nexcesqspp, formula = nexcesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nexcesqspp-spp.txt")
 
 #IMT-II by species
-ntubesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil531_spp_ntubesq.txt")
+ntubesqspp <- read.delim("C:/...grmil531_spp_ntubesq.txt")
 
 set.seed(1)
 ggplot(data = ntubesqspp, aes(x = spp, y = ntubesq, fill = spp)) + 
@@ -253,7 +253,7 @@ capture.output(as.data.frame(kruskal_test(data = ntubesqspp, formula = ntubesq ~
 capture.output(as.data.frame(dunn_test(data = ntubesqspp, formula = ntubesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-ntubesqspp-spp.txt")
 
 #Finger II by species
-niiesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil532_spp_niiesq.txt")
+niiesqspp <- read.delim("C:/.../grmil532_spp_niiesq.txt")
 
 set.seed(1)
 ggplot(data = niiesqspp, aes(x = spp, y = niiesq, fill = spp)) + 
@@ -268,7 +268,7 @@ capture.output(as.data.frame(dunn_test(data = niiesqspp, formula = niiesq ~ spp,
 
 #Finger III by species
 
-niiiesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil600_spp_niiiesq.txt")
+niiiesqspp <- read.delim("C:/.../grmil600_spp_niiiesq.txt")
 
 set.seed(1)
 ggplot(data = niiiesqspp, aes(x = spp, y = niiiesq, fill = spp)) + 
@@ -283,7 +283,7 @@ capture.output(as.data.frame(dunn_test(data = niiiesqspp, formula = niiiesq ~ sp
 
 #Finger IV by species
 
-nivesqspp <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/grmil616_spp_nivesq.txt")
+nivesqspp <- read.delim("C:/.../grmil616_spp_nivesq.txt")
 
 set.seed(1)
 ggplot(data = nivesqspp, aes(x = spp, y = nivesq, fill = spp)) + 
@@ -301,7 +301,7 @@ capture.output(as.data.frame(dunn_test(data = nivesqspp, formula = nivesq ~ spp,
 
 ```{r}
 ##Linear Regressions between N of PEPs and SVL in each part of the hand, by species
-thoropapepscrc <- read.delim("C:/Users/Ariadne/Dropbox/Academia/Computing/R/Morfometria/jan2021/thoropa1024_spp_pepsXcrc.txt")
+thoropapepscrc <- read.delim("C:/.../thoropa1024_spp_pepsXcrc.txt")
 
 thoropapepscrc$crc <- as.numeric(thoropapepscrc$crc)
 thoropapepscrc$nexcesq <- as.numeric(thoropapepscrc$nexcesq)
@@ -513,19 +513,18 @@ dev.off()
 
 ```
 
-######################################### PEPs color and collection dates ################################
+##################################################### PEPs color and collection dates ################################
 
 ```{r}
-cor <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/anocor_623.txt")
+cor <- read.delim("C:/.../anocor_623.txt")
 
 ggplot(data = cor) + 
   geom_bar(mapping = aes(x = ano, fill = corexcesq)) +
   facet_wrap(~ spp)
 
-mescor <- read.delim("C:/Users/afsab/Dropbox/Academia/Computing/R/Morfometria/jan2021-PEPs/mescor_607.txt")
+mescor <- read.delim("C:/.../mescor_607.txt")
 
 ggplot(data = mescor) + 
   geom_bar(mapping = aes(x = mes, fill = corexcesq))
 ```
-
 

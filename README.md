@@ -1,6 +1,6 @@
 # Thoropa_PEPs
 
-This is a small repository, with a basic R script used to perform statistical analyses for the paper "Nuptial pads of rock frogs (genus <i>Thoropa</i>, Cycloramphidae, Anura): development, relationships to spermiogenesis and taxonomy", with authors Ariadne F. Sabbag, Taran Grant, Cinthia A. Brasileiro, Célio F. B. Haddad.
+This is a small repository, with a basic R script used to perform statistical analyses for the paper "Rock frog nuptial pads: the relationship between PEPs  and sexual maturity and its relevance for species taxonomy (Thoropa, Cycloramphidae, Anura)", from authors Ariadne F. Sabbag, Taran Grant, Pavel Dodonov, Cinthia A. Brasileiro, Célio F. B. Haddad.
 
 *PEPs are papillary epidermal projections (a.k.a. "spines") found in the hand of <i>Thoropa</i> species, a frog from Atlantic forest in Brazil.
 

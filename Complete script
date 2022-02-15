@@ -1,0 +1,391 @@
+### title: “Nuptial pads of rock frogs (genus Thoropa, Cycloramphidae, Anura): development, relationships to spermatozoa occurrence and taxonomy”
+### authors: Ariadne F. Sabbag, Taran Grant, Pavel Dodonov, Cinthia A. Brasileiro, Célio F. B. Haddad
+### journal: Zoologischer Anzeiger
+
+####### Packages
+library("tidyr")
+library("ggplot2")
+library("rstatix")
+library("ggpubr")
+library("MASS")
+library("mgcv")
+
+
+################################          Normality tests      #######################################
+
+#These tests are performed with raw data
+
+megnorm <- read.delim("C:/.../meg.txt")
+milnorm <- read.delim("C:/.../mil.txt")
+saxnorm <- read.delim("C:/.../sax.txt")
+taonorm <- read.delim("C:/.../tao.txt")
+petnorm <- read.delim("C:/.../pet.txt")
+
+#Shapiro-Wilks
+set.seed(1)
+capture.output(shapiro.test(megnorm$crc), file = "shap.megnorm.crc.txt")
+capture.output(shapiro.test(megnorm$nivesq), file = "shap.megnorm.nivesq.txt")
+capture.output(shapiro.test(milnorm$crc), file = "shap.milnorm.crc.txt")
+capture.output(shapiro.test(milnorm$nivesq), file = "shap.milnorm.nivesq.txt")
+capture.output(shapiro.test(saxnorm$crc), file = "shap.saxnorm.crc.txt")
+capture.output(shapiro.test(saxnorm$nivesq), file = "shap.saxnorm.nivesq.txt")
+capture.output(shapiro.test(taonorm$crc), file = "shap.taonorm.crc.txt")
+capture.output(shapiro.test(taonorm$nivesq), file = "shap.taonorm.nivesq.txt")
+capture.output(shapiro.test(petnorm$crc), file = "shap.petnorm.crc.txt")
+capture.output(shapiro.test(petnorm$nexcesq), file = "shap.petnorm.nexcesq.txt")
+
+
+
+
+################################          Comparison between left and right sides in terms of PEPs number      #######################################
+setwd("C:/.../jitterpaired")
+files <- list.files()
+files
+dados <- list()
+for (i in 1:length(files)) {
+	dados[[i]] <- read.table(files[i], sep="\t", header=T)
+}
+names(dados) <- gsub(".txt", "", files)
+
+str(dados)
+
+setwd("../figs_jitterpaired")
+
+pdf(file="figs_jitterpaired.pdf", width=7, height=7)
+for(i in 1:length(dados)) {
+	dados.teste <- dados[[i]]
+	str(dados.teste)
+	x.jitter.left <- runif(nrow(dados.teste), 0, 0.5)
+	x.jitter.right <- x.jitter.left + 1
+	espinhos <- c(dados.teste[,3], dados.teste[,4])
+	x.jitter <- c(x.jitter.left, x.jitter.right)
+	plot(espinhos ~ x.jitter, xaxt="n", pch=21, bg="gray", xlab="Side", ylab="Npeps", main=names(dados)[i])
+	segments(x0=x.jitter.left, x1=x.jitter.right, y0=dados.teste[,3], y1=dados.teste[,4], col="gray60")
+	axis(side=1, at=c(0.25, 1.25), labels=c("Left", "Right"))
+}
+dev.off()
+
+
+############################################### Violin Plots #####################################################
+#Total sample of PEPs by species, by part of the hand
+
+peps <- 
+  read.delim("C:/.../thoropa380_spp_peps.txt")
+
+set.seed(1)
+ggplot(data = peps, aes(x = spp, y = nexcesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "nexcesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = peps, formula = nexcesq ~ spp)), file = "kruskalwallis-nexcesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = nexcesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nexcesq-peps.txt") 
+
+set.seed(1)
+ggplot(data = peps, aes(x = spp, y = ntubesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "ntubesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = peps, formula = ntubesq ~ spp)), file = "kruskalwallis-ntubesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = ntubesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-ntubesq-peps.txt")
+
+set.seed(1)
+ggplot(data = peps, aes(x = spp, y = niiesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "niiesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = peps, formula = niiesq ~ spp)), file = "kruskalwallis-niiesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = niiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiesq-peps.txt")
+
+
+set.seed(1)
+ggplot(data = peps, aes(x = spp, y = niiiesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "niiiesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = peps, formula = niiiesq ~ spp)), file = "kruskalwallis-niiiesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = niiiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiiesq-peps.txt")
+
+
+set.seed(1)
+ggplot(data = peps, aes(x = spp, y = nivesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "nivesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = peps, formula = nivesq ~ spp)), file = "kruskalwallis-nivesq-peps.txt")
+capture.output(as.data.frame(dunn_test(data = peps, formula = nivesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nivesq-peps.txt")
+
+#removing the biggest limiting factor of sample size (the PEPs of MPA-II)
+
+pepsparcial <- 
+  read.delim("C:/.../thoropa502_spp_pepsparcial.txt")
+
+set.seed(1)
+ggplot(data = pepsparcial, aes(x = spp, y = ntubesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "ntubesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = ntubesq ~ spp)), file = "kruskalwallis-ntubesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = ntubesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-ntubesq-pepsparcial.txt")
+
+
+set.seed(1)
+ggplot(data = pepsparcial, aes(x = spp, y = niiesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "niiesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = niiesq ~ spp)), file = "kruskalwallis-niiesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = niiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiesq-pepsparcial.txt")
+
+set.seed(1)
+ggplot(data = pepsparcial, aes(x = spp, y = niiiesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "niiiesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = niiiesq ~ spp)), file = "kruskalwallis-niiiesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = niiiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiiesq-pepsparcial.txt")
+
+set.seed(1)
+ggplot(data = pepsparcial, aes(x = spp, y = nivesq)) + 
+  geom_violin(trim = TRUE, fill = "cadetblue4", color = "#284D00") +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "species", y = "nivesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+
+capture.output(as.data.frame(kruskal_test(data = pepsparcial, formula = nivesq ~ spp)), file = "kruskalwallis-nivesq-pepsparcial.txt")
+capture.output(as.data.frame(dunn_test(data = pepsparcial, formula = nivesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nivesq-pepsparcial.txt")
+
+
+################################          Comparisons by species        #######################################
+#MPA-II by species
+nexcesqspp <- read.delim("C:/.../grmil216_spp_nexcesq.txt")
+
+set.seed(1)
+ggplot(data = nexcesqspp, aes(x = spp, y = nexcesq, fill = spp)) + 
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  labs(x = "species", y = "nexcesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+
+capture.output(as.data.frame(kruskal_test(data = nexcesqspp, formula = nexcesq ~ spp)), file = "kruskalwallis-nexcesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = nexcesqspp, formula = nexcesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nexcesqspp-spp.txt")
+
+#IMT-II by species
+ntubesqspp <- read.delim("C:/...grmil531_spp_ntubesq.txt")
+
+set.seed(1)
+ggplot(data = ntubesqspp, aes(x = spp, y = ntubesq, fill = spp)) + 
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  labs(x = "species", y = "ntubesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+  
+capture.output(as.data.frame(kruskal_test(data = ntubesqspp, formula = ntubesq ~ spp)), file = "kruskalwallis-ntubesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = ntubesqspp, formula = ntubesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-ntubesqspp-spp.txt")
+
+#Finger II by species
+niiesqspp <- read.delim("C:/.../grmil532_spp_niiesq.txt")
+
+set.seed(1)
+ggplot(data = niiesqspp, aes(x = spp, y = niiesq, fill = spp)) + 
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  labs(x = "species", y = "niiesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+
+capture.output(as.data.frame(kruskal_test(data = niiesqspp, formula = niiesq ~ spp)), file = "kruskalwallis-niiesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = niiesqspp, formula = niiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiesqspp-spp.txt")
+
+#Finger III by species
+
+niiiesqspp <- read.delim("C:/.../grmil600_spp_niiiesq.txt")
+
+set.seed(1)
+ggplot(data = niiiesqspp, aes(x = spp, y = niiiesq, fill = spp)) + 
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  labs(x = "species", y = "niiiesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+
+capture.output(as.data.frame(kruskal_test(data = niiiesqspp, formula = niiiesq ~ spp)), file = "kruskalwallis-niiiesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = niiiesqspp, formula = niiiesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-niiiesqspp-spp.txt")
+
+#Finger IV by species
+
+nivesqspp <- read.delim("C:/.../grmil616_spp_nivesq.txt")
+
+set.seed(1)
+ggplot(data = nivesqspp, aes(x = spp, y = nivesq, fill = spp)) + 
+  geom_violin(trim = TRUE) +
+  geom_jitter(height = 0, width = 0.1, size = 1.75, color = "black") +
+  labs(x = "species", y = "nivesq") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = "italic"))
+
+capture.output(as.data.frame(kruskal_test(data = nivesqspp, formula = nivesq ~ spp)), file = "kruskalwallis-nivesqspp-spp.txt")
+capture.output(as.data.frame(dunn_test(data = nivesqspp, formula = nivesq ~ spp, p.adjust.method = "bonferroni", detailed = TRUE)), file = "dunn-nivesqspp-spp.txt")
+
+
+################################          Relationship between PEPs number and SVL        #####################################
+##Linear Regressions between N of PEPs and SVL for each part of the hand, by species
+thoropapepscrc <- read.delim("C:/.../thoropa1024_spp_pepsXcrc.txt")
+thoropapepscrc <- read.delim("C:/.../thoropa1024_spp_pepsXcrc.txt")
+
+thoropapepscrc$crc <- as.numeric(thoropapepscrc$crc)
+thoropapepscrc$nexcesq <- as.numeric(thoropapepscrc$nexcesq)
+thoropapepscrc$ntubesq <- as.numeric(thoropapepscrc$ntubesq)
+thoropapepscrc$niiesq <- as.numeric(thoropapepscrc$niiesq)
+thoropapepscrc$niiiesq <- as.numeric(thoropapepscrc$niiiesq)
+thoropapepscrc$nivesq <- as.numeric(thoropapepscrc$nivesq)
+
+
+#GLM Poisson summary
+capture.output(summary(glm(formula = nexcesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm-crcXnexcesq-petropolitana.txt")
+capture.output(summary(glm(formula = nexcesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm-crcXnexcesq-megatympanum.txt")
+capture.output(summary(glm(formula = nexcesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm-crcXnexcesq-miliaris.txt")
+capture.output(summary(glm(formula = nexcesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm-crcXnexcesq-saxatilis.txt")
+capture.output(summary(glm(formula = nexcesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm-crcXnexcesq-taophora.txt")
+capture.output(summary(glm(formula = ntubesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm-crcXntubesq-petropolitana.txt")
+capture.output(summary(glm(formula = ntubesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm-crcXntubesq-petropolitana.txt")
+capture.output(summary(glm(formula = ntubesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm-crcXntubesq-miliaris.txt")
+capture.output(summary(glm(formula = ntubesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm-crcXntubesq-saxatilis.txt")
+capture.output(summary(glm(formula = ntubesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm-crcXntubesq-taophora.txt")
+capture.output(summary(glm(formula = niiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm-crcXniiesq-petropolitana.txt")
+capture.output(summary(glm(formula = niiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm-crcXniiesq-megatympanum.txt")
+capture.output(summary(glm(formula = niiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm-crcXniiesq-miliaris.txt")
+capture.output(summary(glm(formula = niiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm-crcXniiesq-saxatilis.txt")
+capture.output(summary(glm(formula = niiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm-crcXniiesq-taophora.txt")
+capture.output(summary(glm(formula = niiiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm-crcXniiiesq-petropolitana.txt")
+capture.output(summary(glm(formula = niiiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm-crcXniiiesq-megatympanum.txt")
+capture.output(summary(glm(formula = niiiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm-crcXniiiesq-miliaris.txt")
+capture.output(summary(glm(formula = niiiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm-crcXniiiesq-saxatilis.txt")
+capture.output(summary(glm(formula = niiiesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm-crcXniiiesq-taophora.txt")
+capture.output(summary(glm(formula = nivesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm-crcXnivesq-petropolitana.txt")
+capture.output(summary(glm(formula = nivesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm-crcXnivesq-megatympanum.txt")
+capture.output(summary(glm(formula = nivesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm-crcXnivesq-miliaris.txt")
+capture.output(summary(glm(formula = nivesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm-crcXnivesq-saxatilis.txt")
+capture.output(summary(glm(formula = nivesq ~ crc, data = thoropapepscrc, family = poisson, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm-crcXnivesq-taophora.txt")
+
+#GLM Negative Binomial summary
+capture.output(summary(glm.nb(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm.nb-crcXnexcesq-petropolitana.txt")
+capture.output(summary(glm.nb(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm.nb-crcXnexcesq-megatympanum.txt")
+capture.output(summary(glm.nb(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm.nb-crcXnexcesq-miliaris.txt")
+capture.output(summary(glm.nb(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm.nb-crcXnexcesq-saxatilis.txt")
+capture.output(summary(glm.nb(formula = nexcesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm.nb-crcXnexcesq-taophora.txt")
+capture.output(summary(glm.nb(formula = ntubesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm.nb-crcXntubesq-petropolitana.txt")
+capture.output(summary(glm.nb(formula = ntubesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm.nb-crcXntubesq-megatympanum.txt")
+capture.output(summary(glm.nb(formula = ntubesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm.nb-crcXntubesq-miliaris.txt")
+capture.output(summary(glm.nb(formula = ntubesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm.nb-crcXntubesq-saxatilis.txt")
+capture.output(summary(glm.nb(formula = ntubesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm.nb-crcXntubesq-taophora.txt")
+capture.output(summary(glm.nb(formula = niiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm.nb-crcXniiesq-petropolitana.txt")
+capture.output(summary(glm.nb(formula = niiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm.nb-crcXniiesq-megatympanum.txt")
+capture.output(summary(glm.nb(formula = niiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm.nb-crcXniiesq-miliaris.txt")
+capture.output(summary(glm.nb(formula = niiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm.nb-crcXniiesq-saxatilis.txt")
+capture.output(summary(glm.nb(formula = niiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm.nb-crcXniiesq-taophora.txt")
+capture.output(summary(glm.nb(formula = niiiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm.nb-crcXniiiesq-petropolitana.txt")
+capture.output(summary(glm.nb(formula = niiiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm.nb-crcXniiiesq-megatympanum.txt")
+capture.output(summary(glm.nb(formula = niiiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm.nb-crcXniiiesq-miliaris.txt")
+capture.output(summary(glm.nb(formula = niiiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm.nb-crcXniiiesq-saxatilis.txt")
+capture.output(summary(glm.nb(formula = niiiesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm.nb-crcXniiiesq-taophora.txt")
+capture.output(summary(glm.nb(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa petropolitana")), file = "glm.nb-crcXnivesq-petropolitana.txt")
+capture.output(summary(glm.nb(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa megatympanum")), file = "glm.nb-crcXnivesq-megatympanum.txt")
+capture.output(summary(glm.nb(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa miliaris")), file = "glm.nb-crcXnivesq-miliaris.txt")
+capture.output(summary(glm.nb(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa saxatilis")), file = "glm.nb-crcXnivesq-saxatilis.txt")
+capture.output(summary(glm.nb(formula = nivesq ~ crc, data = thoropapepscrc, subset = thoropapepscrc$spp == "Thoropa taophora")), file = "glm-crcXnivesq-taophora.txt")
+
+#testing interactions among species
+capture.output(glm(thoropapepscrc$nexcesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), file = "interacao-entre-spp-crcXnexcesq.txt")
+capture.output(drop1(glm(thoropapepscrc$nexcesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), test = "Chisq"), file = "drop1-testChisq-crcXnexcesq.txt")
+
+capture.output(glm(thoropapepscrc$ntubesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), file = "interacao-entre-spp-crcXntubesq.txt")
+capture.output(drop1(glm(thoropapepscrc$ntubesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), test = "Chisq"), file = "drop1-testChisq-crcXntubesq.txt")
+
+capture.output(glm(thoropapepscrc$niiesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), file = "interacao-entre-spp-crcXniiesq.txt")
+capture.output(drop1(glm(thoropapepscrc$niiesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), test = "Chisq"), file = "drop1-testChisq-crcXniiesq.txt")
+
+capture.output(glm(thoropapepscrc$niiiesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), file = "interacao-entre-spp-crcXniiiesq.txt")
+capture.output(drop1(glm(thoropapepscrc$niiiesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), test = "Chisq"), file = "drop1-testChisq-crcXniiiesq.txt")
+
+capture.output(glm(thoropapepscrc$nivesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), file = "interacao-entre-spp-crcXnivesq.txt")
+capture.output(drop1(glm(thoropapepscrc$nivesq ~ thoropapepscrc$crc + thoropapepscrc$spp + thoropapepscrc$spp:thoropapepscrc$crc, family=quasipoisson), test = "Chisq"), file = "drop1-testChisq-crcXnivesq.txt")
+
+#Graphics
+ggplot(thoropapepscrc, x = crc) + 
+  geom_point(aes(x = crc, y = nexcesq), fill = "red", color = "black", shape = 21, size = 1.5) +
+  geom_smooth(aes(x = crc, y = nexcesq), method = "glm.nb", se = FALSE, color = "red") + 
+  stat_regline_equation(aes(x = crc, y = nexcesq), data = NULL, color = "red", label.x.npc = 0.6, label.y.npc = 0.2) +
+  geom_point(aes(x = crc, y = ntubesq), fill = "blue", color = "black", shape = 21, size = 1.5) +
+  geom_smooth(aes(x = crc, y = ntubesq), method = "glm.nb", se = FALSE, color = "blue") + 
+  stat_regline_equation(aes(x = crc, y = ntubesq), data = NULL, color = "blue", label.x.npc = 0.6, label.y.npc = 0.2) +
+  geom_point(aes(x = crc, y = niiesq), fill = "green", color = "black", shape = 21, size = 1.5) +
+  geom_smooth(aes(x = crc, y = niiesq), method = "glm.nb", se = FALSE, color = "green") + 
+  stat_regline_equation(aes(x = crc, y = niiesq), data = NULL, color = "green", label.x.npc = 0.6, label.y.npc = 0.2) +
+  geom_point(aes(x = crc, y = niiiesq), fill = "pink", color = "black", shape = 21, size = 1.5) +
+  geom_smooth(aes(x = crc, y = niiiesq), method = "glm.nb", se = FALSE, color = "pink") + 
+  stat_regline_equation(aes(x = crc, y = niiiesq), data = NULL, color = "pink", label.x.npc = 0.6, label.y.npc = 0.2) +
+  geom_point(aes(x = crc, y = nivesq), fill = "black", color = "black", shape = 21, size = 1.5) +
+  geom_smooth(aes(x = crc, y = nivesq), method = "glm.nb", se = FALSE, color = "black") + 
+  stat_regline_equation(aes(x = crc, y = nivesq), data = NULL, color = "black", label.x.npc = 0.6, label.y.npc = 0.2) +
+  facet_wrap(~ spp, scales = "free") + 
+  labs(x = "CRC (mm)", y = "peps") +
+  theme_bw() +
+  theme(strip.background = element_rect(fill ="white"), strip.text = element_text(face = "bold.italic", size = 13))
+
+
+
+##################################################### PEPs color and collection dates ################################
+anocor <- read.delim("C:/.../anotempocor.txt")
+mescor <- read.delim("C:/.../mescor.txt")
+
+#GAM (for month analysis) and GLM (for time in collection analysis)
+capture.output(summary(gam(formula = descor ~ mes, data = mescor, family = "binomial")), file = "gam-meses-do-anoXcor.txt")
+capture.output(summary(glm(formula = descor ~ colecao, data = anocor, family = "binomial")), file = "glm-tempo-em-colecaoXcor.txt")
+
+
+#Graphic
+ggplot(data = mescor) + 
+  geom_bar(aes(x = mes, fill = corexcesq), position = "fill") +
+  geom_smooth(aes(x = mes, y = descor), method = "gam", formula=y~s(x,bs="cc"))
+
+ggplot(data = anocor) + 
+  geom_bar(aes(x = colecao, fill = corexcesq), position = "fill") +
+  geom_smooth(aes(x = colecao, y = descor), method = "glm")
+
+

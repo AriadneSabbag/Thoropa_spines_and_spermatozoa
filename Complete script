@@ -375,7 +375,7 @@ anocor <- read.delim("C:/.../anotempocor.txt")
 mescor <- read.delim("C:/.../mescor.txt")
 
 #GAM (for month analysis) and GLM (for time in collection analysis)
-capture.output(summary(gam(formula = descor ~ mes, data = mescor, family = "binomial")), file = "gam-meses-do-anoXcor.txt")
+capture.output(summary(gam(formula = descor ~ s(mes, bs="cc"), data = mescor, family = "binomial")), file = "gam-meses-do-anoXcor.txt")
 capture.output(summary(glm(formula = descor ~ colecao, data = anocor, family = "binomial")), file = "glm-tempo-em-colecaoXcor.txt")
 
 

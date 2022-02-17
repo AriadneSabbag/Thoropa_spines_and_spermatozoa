@@ -1,4 +1,4 @@
-# Thoropa_PEPs
+# Thoropa (Amphibia, Anura, Cycloramphidae) spines and spermatozoa occurrence
 
 This is a small repository, with a basic R script used to perform statistical analyses for the paper "Rock frog nuptial pads: the relationship between PEPs  and sexual maturity and its relevance for species taxonomy (Thoropa, Cycloramphidae, Anura)", from authors Ariadne F. Sabbag, Taran Grant, Pavel Dodonov, Cinthia A. Brasileiro, Célio F. B. Haddad.
 

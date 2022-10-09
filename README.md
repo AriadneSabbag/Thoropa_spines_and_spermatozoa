@@ -1,10 +1,11 @@
 # Thoropa (Amphibia, Anura, Cycloramphidae) spines and spermatozoa occurrence
 
-This is a small repository, with a basic R script used to perform statistical analyses for the paper "Rock frog nuptial pads: the relationship between PEPs  and sexual maturity and its relevance for species taxonomy (Thoropa, Cycloramphidae, Anura)", from authors Ariadne F. Sabbag, Taran Grant, Pavel Dodonov, Cinthia A. Brasileiro, Célio F. B. Haddad.
+This is a small repository, with a basic R script used to perform statistical analyses for the paper "Nuptial pads of rock frogs (Thoropa, Cycloramphidae, Anura): How
+papillary epidermal projections are related to sexual maturity and taxonomy", from authors Ariadne F. Sabbag, Taran Grant, Pavel Dodonov, Cinthia A. Brasileiro, Célio F. B. Haddad.
 
-*PEPs are papillary epidermal projections (a.k.a. "spines") found in the hand of <i>Thoropa</i> species, a frog from Atlantic forest in Brazil.
+*papillary epidermal projections (a.k.a. "spines") are found in the hand of <i>Thoropa</i> species, a frog from Atlantic forest in Brazil.
 
-The paper is submitted to Zoologischer Anzeiger.
+The paper is published in Zoologischer Anzeiger.
 
 ### About the code:
 (1) Paths to my personal directories were replaced by "...".
